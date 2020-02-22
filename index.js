@@ -4,6 +4,9 @@ let mongoose = require("mongoose");
 let config = require("config");
 let user = require("./routes/user");
 let auth = require("./routes/auth/auth");
+let mailer = require("./routes/mailer");
+let forgotpassword = require("./routes/forgot.password");
+let pagination = require("./routes/pagination");
 let port = process.env.PORT || 4600;
 app.use(express.json());
 if(!config.get("apitoken")){
@@ -17,3 +20,6 @@ app.listen(port, () => console.log(`connected to port`));
 
 app.use("/api", user);
 app.use("/api/userlogin", auth);
+app.use("/api", mailer);
+app.use("/api", forgotpassword);
+app.use("/api", pagination);
