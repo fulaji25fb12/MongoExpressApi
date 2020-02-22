@@ -2,13 +2,15 @@ let express = require("express");
 let router = express.Router();
 let User = require("../dbModel/user");
 let bcrypt = require("bcrypt");
+let auth = require("./middleware/user.auth");
+let admin = require("./middleware/admin");
 //fetch data
-router.get("/fetchuser", async (req, res) => {
+router.get("/fetchuser",auth, async (req, res) => {
     let data = await User.userModel.find();
     res.send({ d: data });
 });
 //fetch data by id
-router.get("/fetchuser/:id", async (req, res) => {
+router.get("/fetchuser/:id",auth, async (req, res) => {
     let user = await User.userModel.findById(req.params.id);
     if (!user) { return res.status(404).send({ message: "Invalid user id" }) };
     res.send({ data: user });
@@ -20,7 +22,7 @@ router.post("/createuser", async (req, res) => {
     if (user) {return res.status(403).send({message:"user already exists in our system"})};
     let { error } = User.ValidationError(req.body);
     if (error) { return res.send(error.details[0].message) };
-    let newuser = new User({
+    let newuser = new User.userModel({
         FirstName: req.body.FirstName,
         LastName: req.body.LastName,
         Address: req.body.Address,
@@ -34,7 +36,7 @@ router.post("/createuser", async (req, res) => {
 });
 
 //update data
-router.put("/updateuser/:id", async (req, res) => {
+router.put("/updateuser/:id",auth, async (req, res) => {
     let user = await User.userModel.findById(req.params.id);
     if (!user) { return res.status(404).send({ message: "Invalid user id" }) };
     let { error } = User.ValidationError(req.body);
@@ -54,7 +56,7 @@ router.put("/updateuser/:id", async (req, res) => {
 });
 
 //remove data
-router.delete("/removeuser/:id", async (req, res) => {
+router.delete("/removeuser/:id",[auth,admin], async (req, res) => {
     let user = await User.userModel.findByIdAndRemove(req.params.id);
     if (!user) { return res.status(404).send({ message: "Invalid user id" }) };
     res.send({message:"THANK YOU ! COME BACK AGAIN :("})

@@ -5,6 +5,12 @@ let Joi = require("@hapi/joi");
 let bcrypt = require("bcrypt");
 let jwt = require("jsonwebtoken");
 let config = require("config");
+let auth = require("../middleware/user.auth");
+
+router.get("/me",auth, async(req,res) => {
+    let data = await User.userModel.findById(req.user._id).select("-UserLogin.Password -isAdmin");
+    res.send(data);
+});
 
 router.post("/auth", async(req,res) => {
     let {error} = authValidation(req.body);
@@ -17,7 +23,7 @@ router.post("/auth", async(req,res) => {
     if(!password){return res.status(403).send({message: "Invalid password"})};
     // let token = jwt.sign({_id: user._id}, config.get("apitoken"));
     let token = user.UserToken();
-    res.send({message: "Login Successful", token: token});
+    res.header("x-auth-token", token).send({message: "Login Successful", token: token});
 });
 
 function authValidation(error){
